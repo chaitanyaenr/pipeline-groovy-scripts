@@ -23,12 +23,18 @@ stage ('setup_pbench') {
 			def user = pbench_properties['USER']
 			def tooling_inventory_path = pbench_properties['TOOLING_INVENTORY']
 			def openshift_inventory = pbench_properties['OPENSHIFT_INVENTORY']
+
 			// debug info
+		        println "----------USER DEFINED OPTIONS-------------------"
+                        println "-------------------------------------------------"
+                        println "-------------------------------------------------"
 			println "JUMP_HOST: '${jump_host}'"
 			println "USER: '${user}'"
 			println "TOOLING_INVENTORY_PATH: '${tooling_inventory_path}'"
 			println "OPENSHIFT_INVENTORY_PATH: '${openshift_inventory}'"
-		
+			println "-------------------------------------------------"
+                        println "-------------------------------------------------"
+
 			// Run setup-tooling job
 			try {
 			    setup_pbench_build = build job: 'SETUP-TOOLING',

@@ -23,11 +23,18 @@ stage ('setup_pbench') {
 			def user = pbench_properties['USER']
 			def tooling_inventory_path = pbench_properties['TOOLING_INVENTORY']
 			def openshift_inventory = pbench_properties['OPENSHIFT_INVENTORY']
+
 			// debug info
+			println "----------USER DEFINED OPTIONS-------------------"
+                        println "-------------------------------------------------"
+                        println "-------------------------------------------------"
 			println "JUMP_HOST: '${jump_host}'"
 			println "USER: '${user}'"
 			println "TOOLING_INVENTORY_PATH: '${tooling_inventory_path}'"
 			println "OPENSHIFT_INVENTORY_PATH: '${openshift_inventory}'"
+			println "-------------------------------------------------"
+	                println "-------------------------------------------------"
+
 		
 			// Run setup-tooling job
 			try {
@@ -67,10 +74,29 @@ stage ('nodevertical_scale_test') {
                         def jump_host = nodevertical_properties['JUMP_HOST']
                         def user = nodevertical_properties['USER']
                         def tooling_inventory_path = nodevertical_properties['TOOLING_INVENTORY']
+			def clear_results = nodevertical_properties['CLEAR_RESULTS']
+			def move_results = nodevertical_properties['MOVE_RESULTS']
+			def use_proxy = nodevertical_properties['USE_PROXY']
+			def proxy_user = nodevertical_properties['PROXY_USER]
+			def proxy_host = nodevertical_properties['PROXY_HOST']
+			def containerized = nodevertical_properties['CONTAINERIZED']
+			
                         // debug info
+			println "----------USER DEFINED OPTIONS-------------------"
+			println "-------------------------------------------------"
+			println "-------------------------------------------------"
                         println "JUMP_HOST: '${jump_host}'"
                         println "USER: '${user}'"
                         println "TOOLING_INVENTORY_PATH: '${tooling_inventory_path}'"
+			println "CLEAR_RESULTS: '${clear_results}'"
+			println "MOVE_RESULTS: '${move_results}'"
+			println "USE_PROXY: '${move_results}'"
+			println "PROXY_USER: '${proxy_user}'"
+			println "PROXY_HOST: '${proxy_host}'"
+			println "CONTAINERIZED: '${containerized}'"
+	                println "-------------------------------------------------"
+			println "-------------------------------------------------"
+
 
                         // Run nodevertical job
                         try {
@@ -78,7 +104,13 @@ stage ('nodevertical_scale_test') {
                                 parameters: [   [$class: 'LabelParameterValue', name: 'node', label: node_label ],
                                                 [$class: 'StringParameterValue', name: 'JUMP_HOST', value: jump_host ],
                                                 [$class: 'StringParameterValue', name: 'USER', value: user ],
-                                                [$class: 'StringParameterValue', name: 'TOOLING_INVENTORY', value: tooling_inventory_path ]]
+                                                [$class: 'StringParameterValue', name: 'TOOLING_INVENTORY', value: tooling_inventory_path ],
+						[$class: 'StringParameterValue', name: 'CLEAR_RESULTS', value: clear_results ],
+		                                [$class: 'StringParameterValue', name: 'MOVE_RESULTS', value: move_results ],
+						[$class: 'StringParameterValue', name: 'USE_PROXY', value: use_proxy ],
+                                                [$class: 'StringParameterValue', name: 'PROXY_USER', value: proxy_user ],
+                                                [$class: 'StringParameterValue', name: 'PROXY_HOST', value: proxy_host ],
+						[$class: 'StringParameterValue', name: 'CONTAINERIZED', value: containerized ]]
                         } catch ( Exception e) {
                         echo "NODEVERTICAL-SCALE-TEST Job failed with the following error: "
                         echo "${e.getMessage()}"
