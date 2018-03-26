@@ -5,6 +5,7 @@ println "Current pipeline job build id is '${pipeline_id}'"
 def node_label = 'CCI && ansible-2.3'
 
 // stage 1: conformance test
+// use master host instead of jump host for conformance tests
 stage ('conformance') {
 	  if (CONFORMANCE) {
 		currentBuild.result = "SUCCESS"
@@ -19,7 +20,7 @@ stage ('conformance') {
 			sh "wget ${CONFORMANCE_PROPERTY_FILE}"
 			sh "cat conformance.properties"
 			def conformance_properties = readProperties file: "conformance.properties"
-			def master_host = conformance_properties['MASTER_HOST']
+			def master_hostname = conformance_properties['MASTER_HOST']
 			def user = conformance_properties['USER']
 			def enable_pbench = conformance_properties['ENABLE_PBENCH']
 		        def use_proxy = conformance_properties['USE_PROXY']
@@ -43,7 +44,7 @@ stage ('conformance') {
 			try {
 			    conformance_build = build job: 'SVT_conformance',
 				parameters: [   [$class: 'LabelParameterValue', name: 'node', label: node_label ],
-						[$class: 'StringParameterValue', name: 'MASTER_HOSTNAME', value: master_host ],
+						[$class: 'StringParameterValue', name: 'MASTER_HOSTNAME', value: master_hostname ],
 						[$class: 'StringParameterValue', name: 'MASTER_USER', value: user ],
 						[$class: 'StringParameterValue', name: 'ENABLE_PBENCH', value: enable_pbench ],
 						[$class: 'StringParameterValue', name: 'USE_PROXY', value: use_proxy ],
