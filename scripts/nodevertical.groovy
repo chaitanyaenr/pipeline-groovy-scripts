@@ -77,7 +77,7 @@ stage ('nodevertical_scale_test') {
 			def clear_results = nodevertical_properties['CLEAR_RESULTS']
 			def move_results = nodevertical_properties['MOVE_RESULTS']
 			def use_proxy = nodevertical_properties['USE_PROXY']
-			def proxy_user = nodevertical_properties['PROXY_USER]
+			def proxy_user = nodevertical_properties['PROXY_USER']
 			def proxy_host = nodevertical_properties['PROXY_HOST']
 			def containerized = nodevertical_properties['CONTAINERIZED']
 			
@@ -90,7 +90,7 @@ stage ('nodevertical_scale_test') {
                         println "TOOLING_INVENTORY_PATH: '${tooling_inventory_path}'"
 			println "CLEAR_RESULTS: '${clear_results}'"
 			println "MOVE_RESULTS: '${move_results}'"
-			println "USE_PROXY: '${move_results}'"
+			println "USE_PROXY: '${use_proxy}'"
 			println "PROXY_USER: '${proxy_user}'"
 			println "PROXY_HOST: '${proxy_host}'"
 			println "CONTAINERIZED: '${containerized}'"
