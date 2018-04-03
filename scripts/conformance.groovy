@@ -31,7 +31,7 @@ stage ('conformance') {
                         println "----------USER DEFINED OPTIONS-------------------"
                         println "-------------------------------------------------"
                         println "-------------------------------------------------"
-                        println "JUMP_HOST: '${jump_host}'"
+                        println "MASTER_HOSTNAME: '${master_hostname}'"
                         println "USER: '${user}'"
                         println "ENABLE_PBENCH: '${enable_pbench}'"
                         println "USE_PROXY: '${use_proxy}'"
