@@ -2,11 +2,12 @@
 
 def pipeline_id = env.BUILD_ID
 def node_label = 'CCI && ansible-2.3'
+def setup_tooling = SETUP_TOOLING.toString().toUpperCase()
 
 println "Current pipeline job build id is '${pipeline_id}'"
 // stage 1: setup tooling
 stage ('setup_pbench') {
-	  if (SETUP_TOOLING) {
+	  if (setup_tooling == "TRUE") {
 		currentBuild.result = "SUCCESS"
 		node('CCI && US') {
 			// get properties file

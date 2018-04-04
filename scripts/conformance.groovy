@@ -3,11 +3,12 @@
 def pipeline_id = env.BUILD_ID
 println "Current pipeline job build id is '${pipeline_id}'"
 def node_label = 'CCI && ansible-2.3'
+def run_conformance = CONFORMANCE.toString().toUpperCase()
 
 // stage 1: conformance test
 // use master host instead of jump host for conformance tests
 stage ('conformance') {
-	  if (CONFORMANCE) {
+	  if (run_conformance == "TRUE") {
 		currentBuild.result = "SUCCESS"
 		node('CCI && US') {
 			// get properties file
