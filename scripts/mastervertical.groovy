@@ -3,6 +3,7 @@
 def pipeline_id = env.BUILD_ID
 println "Current pipeline job build id is '${pipeline_id}'"
 def node_label = 'CCI && ansible-2.3'
+def mastervertical = MASTERVERTICAL_SCALE_TEST.toString().toUpperCase()
 
 // stage 3: mastervert test
 stage('mastervertical_scale_test') {

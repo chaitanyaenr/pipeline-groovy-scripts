@@ -5,9 +5,8 @@ println "Current pipeline job build id is '${pipeline_id}'"
 def node_label = 'CCI && ansible-2.3'
 def scaleup = OPENSHIFT_SCALEUP.toString().toUpperCase()
 
-// install openshift
-stage ('openshift_install') {
-	if (scaleup) {
+// install openshiftstage ('openshift_install') {
+stage ('openshift_scaleup') {
 		currentBuild.result = "SUCCESS"
 		node('CCI && US') {
 			// get properties file
@@ -17,7 +16,7 @@ stage ('openshift_install') {
 			}
 			// get properties file
 			//sh  "wget http://file.rdu.redhat.com/~nelluri/pipeline/openshift_scaleup.properties"
-			sh "wget ${OPENSHIFT_PROPERTY_FILE}"
+			sh "wget ${OPENSHIFT_SCALEUP_PROPERTY_FILE}"
 			sh "cat openshift_scaleup.properties"
 			def scaleup_properties = readProperties file: "openshift_scaleup.properties"
 			def openstack_server = scaleup_properties['OPENSTACK_SERVER']
