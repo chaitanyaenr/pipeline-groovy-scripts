@@ -5,7 +5,7 @@ println "Current pipeline job build id is '${pipeline_id}'"
 def node_label = 'CCI && ansible-2.3'
 def browbeat = BROWBEAT_INSTALL.toString().toUpperCase()
 
-// stage 1: run browbeat scale test
+// run browbeat install
 stage ('BROWBEAT') {
           if (browbeat == "TRUE") {
                 currentBuild.result = "SUCCESS"
@@ -48,11 +48,17 @@ stage ('BROWBEAT') {
                         } catch ( Exception e) {
                         echo " Browbeat failed with the following error: "
                         echo "${e.getMessage()}"
+			mail(
+                                to: 'nelluri@redhat.com',
+                                subject: 'Browbeat job failed',
+                                body: """\
+                                        Encoutered an error while running the browbeat job: ${e.getMessage()}\n\n
+                                        Jenkins job: ${env.BUILD_URL}
+                        """)
                         currentBuild.result = "FAILURE"
                         sh "exit 1"
                         }
                         println "Browbeat build ${browbeat_build.getNumber()} completed successfully"
                 }
         }
-                        println "Stage 2: BROWBEAT WITH A PIPELINE BUILD '${pipeline_id} COMPLETED"
 }

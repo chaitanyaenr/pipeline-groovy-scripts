@@ -91,11 +91,17 @@ stage ('openstack_install') {
 			} catch ( Exception e) {
                 	echo "SCALE_CI_OPENSTACK_INSTALL Job failed with the following error: "
                 	echo "${e.getMessage()}"
+			mail(
+                                to: 'nelluri@redhat.com',
+                                subject: 'Scale-ci-install-openstack job failed',
+                                body: """\
+                                        Encoutered an error while running the scale-ci-install-openstack job: ${e.getMessage()}\n\n
+                                        Jenkins job: ${env.BUILD_URL}
+                        """)
                 	currentBuild.result = "FAILURE"
 			sh "exit 1"
             		}
                 	println "SCALE-CI-OPENSTACK-INSTALL build ${openstack_build.getNumber()} completed successfully"
 		}
 	}
-			println "Stage 1: SCALE-CI-OPENSTACK-INSTALL OF PIPELINE BUILD '${pipeline_id} COMPLETED"
 }

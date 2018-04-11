@@ -5,7 +5,7 @@ println "Current pipeline job build id is '${pipeline_id}'"
 def node_label = 'CCI && ansible-2.3'
 def mastervertical = MASTERVERTICAL_SCALE_TEST.toString().toUpperCase()
 
-// stage 3: mastervert test
+// run mastervert test
 stage('mastervertical_scale_test') {
 	if (MASTERVERTICAL_SCALE_TEST) {
 		currentBuild.result = "SUCCESS"
@@ -57,6 +57,14 @@ stage('mastervertical_scale_test') {
                         } catch ( Exception e) {
                        	echo "MASTERVERTICAL-SCALE-TEST Job failed with the following error: "
                         echo "${e.getMessage()}"
+			echo "Sending an email"
+			mail(
+      				to: 'nelluri@redhat.com',
+      				subject: 'Mastervertical-scale-test job failed',
+      				body: """\
+					Encoutered an error while running the mastervertical-scale-test job: ${e.getMessage()}\n\n
+					Jenkins job: ${env.BUILD_URL}
+			""")
                         currentBuild.result = "FAILURE"
                         sh "exit 1"
                         }

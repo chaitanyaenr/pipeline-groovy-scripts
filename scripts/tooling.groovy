@@ -5,7 +5,7 @@ def node_label = 'CCI && ansible-2.3'
 def setup_tooling = SETUP_TOOLING.toString().toUpperCase()
 
 println "Current pipeline job build id is '${pipeline_id}'"
-// stage 1: setup tooling
+// setup tooling
 stage ('setup_pbench') {
 	  if (setup_tooling == "TRUE") {
 		currentBuild.result = "SUCCESS"
@@ -47,11 +47,17 @@ stage ('setup_pbench') {
 			} catch ( Exception e) {
                 	echo "SETUP_TOOLING Job failed with the following error: "
                 	echo "${e.getMessage()}"
+			mail(
+                                to: 'nelluri@redhat.com',
+                                subject: 'Setup-tooling job failed',
+                                body: """\
+                                        Encoutered an error while running the setup-tooling job: ${e.getMessage()}\n\n
+                                        Jenkins job: ${env.BUILD_URL}
+                        """)
                 	currentBuild.result = "FAILURE"
 			sh "exit 1"
             		}
                 	println "SETUP_TOOLING build ${setup_pbench_build.getNumber()} completed successfully"
 		}
 	}
-			println "Stage 1: SETUP-TOOLING OF PIPELINE BUILD '${pipeline_id} COMPLETED"
 }

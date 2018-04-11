@@ -5,7 +5,7 @@ println "Current pipeline job build id is '${pipeline_id}'"
 def node_label = 'CCI && ansible-2.3'
 def nodevertical = NODEVERTICAL_SCALE_TEST.toString().toUpperCase()
 
-// stage 1: run nodevertical scale test
+// run nodevertical scale test
 stage ('nodevertical_scale_test') {
           if (nodevertical == "TRUE") {
                 currentBuild.result = "SUCCESS"
@@ -63,11 +63,18 @@ stage ('nodevertical_scale_test') {
                         } catch ( Exception e) {
                         echo "NODEVERTICAL-SCALE-TEST Job failed with the following error: "
                         echo "${e.getMessage()}"
+			     echo "Sending an email"
+                        mail(
+                                to: 'nelluri@redhat.com',
+                                subject: 'Nodevertical-scale-test job failed',
+                                body: """\
+                                        Encoutered an error while running the nodevertical-scale-test job: ${e.getMessage()}\n\n
+                                        Jenkins job: ${env.BUILD_URL}
+                        """)
                         currentBuild.result = "FAILURE"
                         sh "exit 1"
                         }
                         println "NODE-VERTICAL-SCALE-TEST build ${nodevertical_build.getNumber()} completed successfully"
                 }
         }
-                        println "Stage 2: NODEVERTICAL-SCALE-TEST OF PIPELINE BUILD '${pipeline_id} COMPLETED"
 }

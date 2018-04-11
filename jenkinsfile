@@ -5,6 +5,7 @@ def run_conformance = CONFORMANCE.toString().toUpperCase()
 def openshift_install = OPENSHIFT_INSTALL.toString().toUpperCase()
 def nodevertical = NODEVERTICAL_SCALE_TEST.toString().toUpperCase()
 def mastervertical = MASTERVERTICAL_SCALE_TEST.toString().toUpperCase()
+def http = HTTP_SCALE_TEST.toString().toUpperCase()
 def install_openstack = OPENSTACK_INSTALL.toString().toUpperCase()
 def browbeat = BROWBEAT_INSTALL.toString().toUpperCase()
 def scaleup = OPENSHIFT_SCALEUP.toString().toUpperCase()
@@ -59,5 +60,10 @@ node {
     if (http == "TRUE") {
         load "aos-cd-jobs/pipeline-scripts/http.groovy"
     }
-
+    mail(
+    	to: 'nelluri@redhat.com',
+        subject: 'Scale-ci pipeline completed successfully',
+        body: """\
+        Jenkins job: ${env.BUILD_URL}
+    """)
 }

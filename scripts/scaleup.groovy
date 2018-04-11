@@ -5,7 +5,7 @@ println "Current pipeline job build id is '${pipeline_id}'"
 def node_label = 'CCI && ansible-2.3'
 def scaleup = OPENSHIFT_SCALEUP.toString().toUpperCase()
 
-// install openshiftstage ('openshift_install') {
+// scaleup
 stage ('openshift_scaleup') {
 		currentBuild.result = "SUCCESS"
 		node('CCI && US') {
@@ -46,7 +46,7 @@ stage ('openshift_scaleup') {
                         println "-------------------------------------------------"
                         println "-------------------------------------------------"	
 		
-			// Run scale-ci openshift install
+			// Run scaleup
 			try {
 			    scaleup_build = build job: 'scale-ci-ScaleUp_Openshift',
 				parameters: [   [$class: 'LabelParameterValue', name: 'node', label: node_label ],
@@ -63,11 +63,17 @@ stage ('openshift_scaleup') {
 			} catch ( Exception e) {
                 	echo "SCALE_CI_OPENSHIFT_SCALEUP Job failed with the following error: "
                 	echo "${e.getMessage()}"
+			mail(
+                                to: 'nelluri@redhat.com',
+                                subject: 'Scaleup job failed',
+                                body: """\
+                                        Encoutered an error while running the scalup job: ${e.getMessage()}\n\n
+                                        Jenkins job: ${env.BUILD_URL}
+                        """)
                 	currentBuild.result = "FAILURE"
 			sh "exit 1"
             		}
                 	println "SCALE-CI-OPENSHIFT-SCALEUP build ${openshift_build.getNumber()} completed successfully"
 		}
 	}
-			println "Stage 1: SCALE-CI-OPENSHIFT-SCALEUPL OF PIPELINE BUILD '${pipeline_id} COMPLETED"
 }

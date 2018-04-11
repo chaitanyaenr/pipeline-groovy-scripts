@@ -5,7 +5,7 @@ println "Current pipeline job build id is '${pipeline_id}'"
 def node_label = 'CCI && ansible-2.3'
 def run_conformance = CONFORMANCE.toString().toUpperCase()
 
-// stage 1: conformance test
+// run conformance
 // use master host instead of jump host for conformance tests
 stage ('conformance') {
 	  if (run_conformance == "TRUE") {
@@ -54,11 +54,17 @@ stage ('conformance') {
 			} catch ( Exception e) {
                 	echo "CONFORMANCE Job failed with the following error: "
                 	echo "${e.getMessage()}"
+			mail(
+                                to: 'nelluri@redhat.com',
+                                subject: 'Conformance job failed',
+                                body: """\
+                                        Encoutered an error while running the conformance job: ${e.getMessage()}\n\n
+                                        Jenkins job: ${env.BUILD_URL}
+                        """)
                 	currentBuild.result = "FAILURE"
 			sh "exit 1"
             		}
                 	println "CONFORMANCE build ${conformance_build.getNumber()} completed successfully"
 		}
 	}
-			println "Stage 1: CONFORMANCE OF PIPELINE BUILD '${pipeline_id} COMPLETED"
 }

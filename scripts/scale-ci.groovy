@@ -64,11 +64,17 @@ stage ('openshift_install') {
 			} catch ( Exception e) {
                 	echo "SCALE_CI_OPENSHIFT_INSTALL Job failed with the following error: "
                 	echo "${e.getMessage()}"
+			mail(
+                                to: 'nelluri@redhat.com',
+                                subject: 'Scale-ci-install-openshift job failed',
+                                body: """\
+                                        Encoutered an error while running the scale-ci-install-openshift job: ${e.getMessage()}\n\n
+                                        Jenkins job: ${env.BUILD_URL}
+                        """)
                 	currentBuild.result = "FAILURE"
 			sh "exit 1"
             		}
                 	println "SCALE-CI-OPENSHIFT-INSTALL build ${openshift_build.getNumber()} completed successfully"
 		}
 	}
-			println "Stage 1: SCALE-CI-OPENSHIFT-INSTALL OF PIPELINE BUILD '${pipeline_id} COMPLETED"
 }
