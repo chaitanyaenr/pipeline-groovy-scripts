@@ -48,7 +48,7 @@ stage ('conformance') {
 						[$class: 'StringParameterValue', name: 'MASTER_HOSTNAME', value: master_hostname ],
 						[$class: 'StringParameterValue', name: 'MASTER_USER', value: user ],
 						[$class: 'StringParameterValue', name: 'ENABLE_PBENCH', value: enable_pbench ],
-						[$class: 'StringParameterValue', name: 'USE_PROXY', value: use_proxy ],
+						[$class: 'BooleanParameterValue', name: 'USE_PROXY', value: use_proxy ],
 						[$class: 'StringParameterValue', name: 'PROXY_USER', value: proxy_user ],
 						[$class: 'StringParameterValue', name: 'PROXY_HOST', value: proxy_host ]]
 			} catch ( Exception e) {

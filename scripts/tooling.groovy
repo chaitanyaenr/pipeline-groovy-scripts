@@ -24,6 +24,10 @@ stage ('setup_pbench') {
 			def user = pbench_properties['USER']
 			def tooling_inventory_path = pbench_properties['TOOLING_INVENTORY']
 			def openshift_inventory = pbench_properties['OPENSHIFT_INVENTORY']
+			def use_proxy = pbench_properties['USE_PROXY']
+                        def proxy_user = pbench_properties['PROXY_USER']
+                        def proxy_host = pbench_properties['PROXY_HOST']
+			def containerized = pbench_properties['CONTAINERIZED']
 
 			// debug info
 		        println "----------USER DEFINED OPTIONS-------------------"
@@ -42,8 +46,11 @@ stage ('setup_pbench') {
 				parameters: [   [$class: 'LabelParameterValue', name: 'node', label: node_label ],
 						[$class: 'StringParameterValue', name: 'JUMP_HOST', value: jump_host ],
 						[$class: 'StringParameterValue', name: 'USER', value: user ],
-						[$class: 'StringParameterValue', name: 'TOOLING_INVENTORY', value: tooling_inventory_path ],
-						[$class: 'StringParameterValue', name: 'OPENSHIFT_INVENTORY', value: openshift_inventory ]]
+						[$class: 'StringParameterValue', name: 'TOOLING_INVENTORY', value: tooling_inventory_path ],															   [$class: 'StringParameterValue', name: 'OPENSHIFT_INVENTORY', value: openshift_inventory ],
+                                                [$class: 'StringParameterValue', name: 'USE_PROXY', value: use_proxy ],
+                                                [$class: 'StringParameterValue', name: 'PROXY_USER', value: proxy_user ],
+                                                [$class: 'StringParameterValue', name: 'PROXY_HOST', value: proxy_host ],
+						[$class: 'StringParameterValue', name: 'CONTAINERIZED', value: containerized ]]
 			} catch ( Exception e) {
                 	echo "SETUP_TOOLING Job failed with the following error: "
                 	echo "${e.getMessage()}"
