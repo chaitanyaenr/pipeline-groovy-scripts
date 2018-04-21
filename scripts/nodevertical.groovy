@@ -54,12 +54,12 @@ stage ('nodevertical_scale_test') {
                                                 [$class: 'StringParameterValue', name: 'JUMP_HOST', value: jump_host ],
                                                 [$class: 'StringParameterValue', name: 'USER', value: user ],
                                                 [$class: 'StringParameterValue', name: 'TOOLING_INVENTORY', value: tooling_inventory_path ],
-						[$class: 'StringParameterValue', name: 'CLEAR_RESULTS', value: clear_results ],
-		                                [$class: 'StringParameterValue', name: 'MOVE_RESULTS', value: move_results ],
-						[$class: 'StringParameterValue', name: 'USE_PROXY', value: use_proxy ],
+						[$class: 'BooleanParameterValue', name: 'CLEAR_RESULTS', value: Boolean.valueOf(clear_results) ],
+		                                [$class: 'BooleanParameterValue', name: 'MOVE_RESULTS', value: Boolean.valueOf(move_results) ],
+						[$class: 'BooleanParameterValue', name: 'USE_PROXY', value: Boolean.valueOf(use_proxy) ],
                                                 [$class: 'StringParameterValue', name: 'PROXY_USER', value: proxy_user ],
                                                 [$class: 'StringParameterValue', name: 'PROXY_HOST', value: proxy_host ],
-						[$class: 'StringParameterValue', name: 'CONTAINERIZED', value: containerized ]]
+						[$class: 'BooleanParameterValue', name: 'CONTAINERIZED', value: Boolean.valueOf(containerized) ]]
                         } catch ( Exception e) {
                         echo "NODEVERTICAL-SCALE-TEST Job failed with the following error: "
                         echo "${e.getMessage()}"
