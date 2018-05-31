@@ -14,7 +14,7 @@
     - bool:
         default: false
         description: ''
-        name: SCALE-CI-INSTALL-OPENSHIFT
+        name: OPENSHIFT_INSTALL
     - bool:
         default: false
         description: ''
@@ -35,38 +35,62 @@
         default: false
         description: ''
         name: MASTERVERTICAL_SCALE_TEST
-    - string:
-        default: http://file.rdu.redhat.com/~nelluri/pipeline/setup_pbench.properties
+    - bool:
+        default: false
         description: ''
-        name: SETUP_PBENCH_PROPERTY_FILE
-    - string:
-        default: http://file.rdu.redhat.com/~nelluri/pipeline/nodevertical.properties
+        name: HTTP_TEST
+    - bool:
+        default: false
         description: ''
-        name: NODEVERTICAL_PROPERTY_FILE
-    - string:
-        default: http://file.rdu.redhat.com/~nelluri/pipeline/conformance.properties
+        name: LOGGING_SCALE_TEST
+    - bool:
+        default: false
         description: ''
-        name: CONFORMANCE_PROPERTY_FILE
+        name: PGBENCH_TEST
+    - string:
+        default: http://jmencak-pub.usersys.redhat.com/jenkins/pipeline/alderaan/openstack.properties
+        description: ''
+        name: OPENSTACK_PROPERTY_FILE
+    - string:
+        default: http://jmencak-pub.usersys.redhat.com/jenkins/pipeline/alderaan/browbeat.properties
+        description: ''
+        name: BROWBEAT_PROPERTY_FILE
     - string:
         default: http://file.rdu.redhat.com/~nelluri/pipeline/openshift.properties
         description: ''
         name: OPENSHIFT_PROPERTY_FILE
     - string:
-        default: http://file.rdu.redhat.com/~nelluri/pipeline/mastervert.properties
+        default: http://file.rdu.redhat.com/~nelluri/pipeline/setup_pbench.properties
         description: ''
-        name: MASTERVERTICAL_PROPERTY_FILE
+        name: SETUP_PBENCH_PROPERTY_FILE
     - string:
-        default: http://file.rdu.redhat.com/~nelluri/pipeline/openstack.properties
+        default: http://file.rdu.redhat.com/~nelluri/pipeline/conformance.properties
         description: ''
-        name: OPENSTACK_PROPERTY_FILE
-    - string:
-        default: http://file.rdu.redhat.com/~nelluri/pipeline/mastervert.properties
-        description: ''
-        name: BROWBEAT_PROPERTY_FILE
+        name: CONFORMANCE_PROPERTY_FILE
     - string:
         default: http://file.rdu.redhat.com/~nelluri/pipeline/openshift_scaleup.properties
         description: ''
         name: OPENSHIFT_SCALEUP_PROPERTY_FILE
+    - string:
+        default: http://file.rdu.redhat.com/~nelluri/pipeline/nodevertical.properties
+        description: ''
+        name: NODEVERTICAL_PROPERTY_FILE
+    - string:
+        default: http://file.rdu.redhat.com/~nelluri/pipeline/mastervert.properties
+        description: ''
+        name: MASTERVERTICAL_PROPERTY_FILE
+    - string:
+        default: http://file.rdu.redhat.com/~nelluri/pipeline/logging.properties
+        description: ''
+        name: LOGGING_PROPERTY_FILE
+    - string:
+        default: http://jmencak-pub.usersys.redhat.com/jenkins/pipeline/alderaan/http_test.properties
+        description: ''
+        name: HTTP_TEST_PROPERTY_FILE
+    - string:
+        default: https://raw.githubusercontent.com/ekuric/openshift/master/postgresql/pgbench.properties
+        description: ''
+        name: PGBENCH_PROPERTY_FILE
     pipeline-scm:
       lightweight-checkout: false
       scm:
@@ -75,14 +99,9 @@
           - '*/tooling'
           url: https://github.com/chaitanyaenr/aos-cd-jobs.git
           wipe-workspace: true
-      scriptPath: pipeline-scripts/tooling.groovy
+      scriptPath: pipeline-scripts/jenkinsfile
     project-type: pipeline
     properties:
-    - build-discarder:
-        artifact-days-to-keep: -1
-        artifact-num-to-keep: -1
-        days-to-keep: -1
-        num-to-keep: 5
     - raw:
         xml: |
           <com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty plugin="gitlab-plugin@1.5.2">

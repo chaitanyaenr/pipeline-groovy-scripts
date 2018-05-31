@@ -2,51 +2,30 @@
     block-downstream: false
     block-upstream: false
     builders:
-    - shell: |+
-        set -e
-
-        export PRIVATE_KEY=$WORKSPACE/private/config/keys/id_rsa_perf
-        chmod 600 ${PRIVATE_KEY}
-        export OPTIONS="-o StrictHostKeyChecking=no"
-        export KUBECONFIG="/root/.kube/config"
-
-
-        if [[ "${USE_PROXY}" == "true" ]]; then
-        ssh ${OPTIONS} -o ProxyCommand='ssh -i ${PRIVATE_KEY} -W %h:%p ${PROXY_USER}@${PROXY_HOST}' -i ${PRIVATE_KEY} ${USER}@${JUMP_HOST} 'bash -s' <<ENDSSH
-        sudo su -
-        oc login -u system:admin
-        if [[ -d "/root/scale-cd-jobs" ]]; then
-        rm -rf /root/scale-cd-jobs
-        fi
-        git clone https://github.com/chaitanyaenr/scale-cd-jobs.git /root/scale-cd-jobs
-        cd /root/scale-cd-jobs/build-scripts
-        ./mastervert.sh $SETUP_PBENCH $CONTAINERIZED $CLEAR_RESULTS $MOVE_RESULTS $TOOLING_INVENTORY $PROJECTS
-        exit
-        ENDSSH
-        else
-        ssh ${OPTIONS} -i ${PRIVATE_KEY} ${USER}@${JUMP_HOST} 'bash -s'<<ENDSSH
-        if [[ -d "/root/scale-cd-jobs" ]]; then
-        rm -rf /root/scale-cd-jobs
-        fi
-        git clone https://github.com/chaitanyaenr/scale-cd-jobs.git /root/scale-cd-jobs
-        cd /root/scale-cd-jobs/build-scripts
-        ./mastervert.sh $SETUP_PBENCH $CONTAINERIZED $CLEAR_RESULTS $MOVE_RESULTS $TOOLING_INVENTORY $PROJECTS
-        exit
-        ENDSSH
-        fi
-
-        test_rc=$(ssh -o StrictHostKeyChecking=no -i $WORKSPACE/private/config/keys/id_rsa_perf root@${JUMP_HOST} 'cat /tmp/test_status' )
-        if [[ "$test_rc" != 0 ]]; then
-        echo "mastervertical test failed"
-        exit 1
-        fi
-        exit 0
-
+    - shell: "set -e\n\nexport PRIVATE_KEY=$WORKSPACE/private/config/keys/id_rsa_perf\n\
+        chmod 600 ${PRIVATE_KEY}\nexport OPTIONS=\"-o StrictHostKeyChecking=no\"\n\
+        export KUBECONFIG=\"/root/.kube/config\"\n\n\nif [[ \"${USE_PROXY}\" == \"\
+        true\" ]]; then\nssh ${OPTIONS} -o ProxyCommand=\"ssh -i ${PRIVATE_KEY} -W\
+        \ %h:%p ${PROXY_USER}@${PROXY_HOST}\" -i ${PRIVATE_KEY} ${USER}@${JUMP_HOST}\
+        \ 'bash -s' <<ENDSSH\nsudo su -\noc login -u system:admin\nif [[ -d \"/root/scale-cd-jobs\"\
+        \ ]]; then\nrm -rf /root/scale-cd-jobs\nfi\ngit clone https://github.com/chaitanyaenr/scale-cd-jobs.git\
+        \ /root/scale-cd-jobs\ncd /root/scale-cd-jobs/build-scripts\n./mastervert.sh\
+        \ $SETUP_PBENCH $CONTAINERIZED $CLEAR_RESULTS $MOVE_RESULTS $TOOLING_INVENTORY\
+        \ $FIRST_RUN_PROJECTS $SECOND_RUN_PROJECTS $THIRD_RUN_PROJECTS\nexit\nENDSSH\n\
+        else\nssh ${OPTIONS} -i ${PRIVATE_KEY} ${USER}@${JUMP_HOST} 'bash -s'<<ENDSSH\n\
+        if [[ -d \"/root/scale-cd-jobs\" ]]; then\nrm -rf /root/scale-cd-jobs\nfi\n\
+        git clone https://github.com/chaitanyaenr/scale-cd-jobs.git /root/scale-cd-jobs\n\
+        cd /root/scale-cd-jobs/build-scripts\n./mastervert.sh $SETUP_PBENCH $CONTAINERIZED\
+        \ $CLEAR_RESULTS $MOVE_RESULTS $TOOLING_INVENTORY $FIRST_RUN_PROJECTS $SECOND_RUN_PROJECTS\
+        \ $THIRD_RUN_PROJECTS\nexit\nENDSSH\nfi\n\n#test_rc=$(ssh -o StrictHostKeyChecking=no\
+        \ -i $WORKSPACE/private/config/keys/id_rsa_perf root@${JUMP_HOST} 'cat /tmp/test_status'\
+        \ )\n#if [[ \"$test_rc\" != 0 ]]; then\n#\techo \"mastervertical test failed\"\
+        \n#\texit 1\n#fi\nexit 0\n\n"
     concurrent: false
     description: This job runs mastervertical on openshift. This job depends on https://openshift-qe-jenkins.rhev-ci-vms.eng.rdu2.redhat.com/view/System%20Verification%20Test/job/SETUP-TOOLING/
       to setup pbench both containerized and non containerized.
     disabled: false
-    name: !!python/unicode 'mastervert'
+    name: !!python/unicode 'mastervertical'
     parameters:
     - string:
         default: ''
@@ -71,7 +50,7 @@
         description: The server to use in the ssh ProxyCommand.
         name: PROXY_HOST
     - bool:
-        default: true
+        default: false
         description: When enabled will register tools using pbench-ansible
         name: SETUP_PBENCH
     - string:
@@ -92,22 +71,30 @@
         description: when enabled will run containerized pbench.
         name: CONTAINERIZED
     - string:
-        default: '3'
+        default: '1000'
         description: ''
-        name: PROJECTS
+        name: FIRST_RUN_PROJECTS
+    - string:
+        default: '2000'
+        description: ''
+        name: SECOND_RUN_PROJECTS
+    - string:
+        default: '3000'
+        description: ''
+        name: THIRD_RUN_PROJECTS
     project-type: freestyle
     properties:
     - build-discarder:
         artifact-days-to-keep: -1
         artifact-num-to-keep: -1
         days-to-keep: -1
-        num-to-keep: 5
+        num-to-keep: 10
     - raw:
         xml: |
           <hudson.plugins.disk__usage.DiskUsageProperty plugin="disk-usage@0.28" />
     - raw:
         xml: |
-          <com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty plugin="gitlab-plugin@1.4.8">
+          <com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty plugin="gitlab-plugin@1.5.2">
           <gitLabConnection />
           </com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty>
     - raw:
@@ -147,7 +134,7 @@
         basedir: private
         branches:
         - '*/master'
-        credentials-id: XXXXXXXXXXXXXXX
+        credentials-id: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
         url: ssh://openshift-jenkins@code.engineering.redhat.com:22/cucushift-internal
     triggers: []
     wrappers:
