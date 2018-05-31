@@ -1,0 +1,312 @@
+- job:
+    block-downstream: false
+    block-upstream: false
+    builders:
+    - shell: |-
+        set -e
+
+        export PRIVATE_KEY=$WORKSPACE/private/config/keys/id_rsa_perf
+        chmod 600 ${PRIVATE_KEY}
+        export OPTIONS="-o StrictHostKeyChecking=no"
+        export KUBECONFIG="/root/.kube/config"
+
+
+        if [[ "${USE_PROXY}" == "true" ]]; then
+        ssh ${OPTIONS} -o ProxyCommand="ssh -i ${PRIVATE_KEY} -W %h:%p ${PROXY_USER}@${PROXY_HOST}" -i ${PRIVATE_KEY} ${USER}@${JUMP_HOST} 'bash -s' <<ENDSSH
+        sudo su -
+        oc login -u system:admin
+        # create template with storage class support
+        oc create -f https://raw.githubusercontent.com/ekuric/openshift/master/postgresql/postgresql-persistent-cns.json
+        if [[ -d "/root/openshift-elko" ]]; then
+        rm -rf /root/openshift-elko
+        fi
+        git clone https://github.com/ekuric/openshift.git /root/openshift-elko
+        cd /root/openshift-elko/postgresql
+        chmod +x pgbench_test.sh
+        chmod +x runpgbench.sh
+        ./runpgbench.sh $NAMESPACE $TRANSACTIONS $TEMPLATE $VOLUME_CAPACITY $MEMORY_LIMIT $ITERATIONS $MODE $CLIENTS $THREADS $SCALING $STORAGECLASS $PBENCHCONFIG
+
+        ENDSSH
+        else
+        ssh ${OPTIONS} -i ${PRIVATE_KEY} ${USER}@${JUMP_HOST} 'bash -s'<<ENDSSH
+        sudo su -
+        oc login -u system:admin
+        # create template with storage class support
+        oc create -f https://raw.githubusercontent.com/ekuric/openshift/master/postgresql/postgresql-persistent-cns.json
+
+        if [[ -d "/root/openshift-elko" ]]; then
+        rm -rf /root/openshift-elko
+        fi
+        git clone https://github.com/ekuric/openshift.git /root/openshift-elko
+        cd /root/openshift-elko/postgresql
+        chmod +x pgbench_test.sh
+        chmod +x runpgbench.sh
+        ./runpgbench.sh $NAMESPACE $TRANSACTIONS $TEMPLATE $VOLUME_CAPACITY $MEMORY_LIMIT $ITERATIONS $MODE $CLIENTS $THREADS $SCALING $STORAGECLASS $PBENCHCONFIG
+
+
+        ENDSSH
+        fi
+
+
+        if [[ "${MOVE_RESULTS}" == "true" ]]; then
+        ssh ${OPTIONS} -o ProxyCommand="ssh -i ${PRIVATE_KEY} -W %h:%p ${PROXY_USER}@${PROXY_HOST}" -i ${PRIVATE_KEY} ${USER}@${JUMP_HOST} 'bash -s' <<ENDSSH
+        sudo su -
+        pbench-move-results --prefix=pprof_removed_repeated_run_pgbench_test_${STORAGECLASS}
+        ENDSSH
+        fi
+
+
+        exit 0
+    concurrent: false
+    description: null
+    disabled: false
+    name: !!python/unicode 'pgbench'
+    node: CCI && US
+    parameters:
+    - string:
+        default: ''
+        description: |-
+          <pre>
+          <strong>
+          This is NAMESPACE where Postgresql pod will be created
+          </strong>
+          </pre>
+        name: NAMESPACE
+    - string:
+        default: ''
+        description: |-
+          <pre>
+          <strong>
+          How many pgbench transactions to run - this is pgbench -t parameter
+          Check "man pgbench" for more information
+          </strong>
+          </pre>
+        name: TRANSACTIONS
+    - string:
+        default: ''
+        description: |-
+          <pre>
+          <strong>
+          The openshift template which has build in storageclass support.
+          Until Bugzilla https://bugzilla.redhat.com/show_bug.cgi?id=1559728 is solved we have to create template which
+          supports dynamic storage provision.
+          Check BZ https://bugzilla.redhat.com/show_bug.cgi?id=1559728 how to add support for dynamic storage provision to an OCP template
+          </strong>
+          </pre>
+        name: TEMPLATE
+    - string:
+        default: ''
+        description: |-
+          <pre>
+          <strong>
+          Volume space available for data, e.g. 512Mi, 2Gi.
+          This is the size of CNS volume - pay attention that 1000 pgbench transactions consume cca 15 GB of space and plan accordingly
+          If CNS volume size is not big enought then test will fail
+          </strong>
+          </pre>
+        name: VOLUME_CAPACITY
+    - string:
+        default: ''
+        description: |-
+          <pre>
+          <strong>
+          Maximum amount of memory the container can use.
+          </strong>
+          </pre>
+        name: MEMORY_LIMIT
+    - string:
+        default: ''
+        description: |-
+          <pre>
+          <strong>
+          How many ITERATIONS of this test to run. Running ITERATIONS > 1 is advicable
+          </strong>
+          </pre>
+        name: ITERATIONS
+    - string:
+        default: ''
+        description: |-
+          <pre>
+          <strong>
+          MODE can be
+
+          cnsblock - cns block storage class will be used for storage
+          cnsfile - cns file storageclass will be used for storage
+          otherstorage - the storage will be decided based on storage class specified
+
+          For now stick with either "cnsblock" or "cnsfile" as we want to test cnsblock / cnsfile with postgresql
+          </strong>
+          </pre>
+        name: MODE
+    - string:
+        default: ''
+        description: |-
+          <pre>
+          <strong>
+          How many pgbench CLIENTS to use in tests
+
+          This is -c pgbench parameter, check "man pgbench" for more information
+          </strong>
+          </pre>
+        name: CLIENTS
+    - string:
+        default: ''
+        description: |-
+          <pre>
+          <strong>
+          How many pgbench THREADS to run
+
+          This is  -t pgbench parameter,  check "man pgbench" for more information
+          </strong>
+          </pre>
+        name: THREADS
+    - string:
+        default: ''
+        description: |-
+          <pre>
+          <strong>
+          pgbench SCALING factor
+
+          This is -s pgbench parameter, check "man pgbench" for more information
+          </strong>
+          </pre>
+        name: SCALING
+    - string:
+        default: ''
+        description: |-
+          <pre>
+          <strong>
+          Name of STORAGECLASS to use for test.
+
+          Default OCP installer when instructed to install CNS will configure below storage classes.
+
+
+          # oc get storageclass
+          NAME                          PROVISIONER
+          glusterfs-storage (default)   kubernetes.io/glusterfs
+          glusterfs-storage-block       gluster.org/glusterblock
+          </strong>
+          </pre>
+
+          <pre>
+          <strong>
+          Any of these is safe to use and based on this decision an PVC for Postgresql will be created for usage
+          </strong>
+          </pre>
+        name: STORAGECLASS
+    - string:
+        default: ansible-host
+        description: |-
+          <pre>
+          <strong>
+          The jump host needs to have the inventory used to install openshift and kube config.
+          </strong>
+          </pre>
+        name: JUMP_HOST
+    - string:
+        default: root
+        description: |
+          <pre>
+          <strong>
+          The user to use when sshing to the JUMP_HOST.
+          </strong>
+          </pre>
+        name: USER
+    - string:
+        default: stack
+        description: |-
+          <pre>
+          <strong>
+          The name to use in the ssh ProxyCommand.
+          </strong>
+          </pre>
+        name: PROXY_USER
+    - string:
+        default: b03-h01-1029p.rdu.openstack.engineering.redhat.com
+        description: |-
+          <pre>
+          <strong>
+          The server to use in the ssh ProxyCommand.
+          </strong>
+          </pre>
+        name: PROXY_HOST
+    - bool:
+        default: true
+        description: |-
+          <pre>
+          <strong>
+          Use the ProxyCommand to access the OpenShift masters, jump host on private networks in the lab.
+          </strong>
+          </pre>
+        name: USE_PROXY
+    - bool:
+        default: true
+        description: when enabled will move the results to the server.
+        name: MOVE_RESULTS
+    - string:
+        default: ''
+        description: 'PBENCHCONFIG , this is pbench --config parameter '
+        name: PBENCHCONFIG
+    project-type: freestyle
+    properties:
+    - raw:
+        xml: |
+          <hudson.plugins.disk__usage.DiskUsageProperty plugin="disk-usage@0.28" />
+    - raw:
+        xml: |
+          <com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty plugin="gitlab-plugin@1.5.2">
+          <gitLabConnection />
+          </com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty>
+    - raw:
+        xml: |
+          <org.jenkinsci.plugins.ZMQEventPublisher.HudsonNotificationProperty plugin="zmq-event-publisher@0.0.5">
+          <enabled>false</enabled>
+          </org.jenkinsci.plugins.ZMQEventPublisher.HudsonNotificationProperty>
+    - raw:
+        xml: |
+          <com.synopsys.arc.jenkins.plugins.ownership.jobs.JobOwnerJobProperty plugin="ownership@0.10.0">
+          <ownership>
+          <ownershipEnabled>true</ownershipEnabled>
+          <primaryOwnerId>ekuric</primaryOwnerId>
+          <coownersIds class="sorted-set" />
+          </ownership>
+          </com.synopsys.arc.jenkins.plugins.ownership.jobs.JobOwnerJobProperty>
+    - raw:
+        xml: |
+          <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.25">
+          <autoRebuild>false</autoRebuild>
+          <rebuildDisabled>false</rebuildDisabled>
+          </com.sonyericsson.rebuild.RebuildSettings>
+    - raw:
+        xml: |
+          <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.0.1">
+          <maxConcurrentPerNode>0</maxConcurrentPerNode>
+          <maxConcurrentTotal>0</maxConcurrentTotal>
+          <categories class="java.util.concurrent.CopyOnWriteArrayList" />
+          <throttleEnabled>false</throttleEnabled>
+          <throttleOption>project</throttleOption>
+          <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+          <paramsToUseForLimit />
+          </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    publishers:
+    - raw:
+        xml: |
+          <org.jenkinsci.plugins.postbuildscript.PostBuildScript plugin="postbuildscript@2.2.1">
+          <config>
+          <scriptFiles />
+          <groovyScripts />
+          <buildSteps />
+          <markBuildUnstable>false</markBuildUnstable>
+          </config>
+          </org.jenkinsci.plugins.postbuildscript.PostBuildScript>
+    scm:
+    - git:
+        basedir: private
+        branches:
+        - '*/master'
+        credentials-id: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        url: ssh://openshift-jenkins@code.engineering.redhat.com:22/cucushift-internal
+    triggers: []
+    wrappers:
+    - workspace-cleanup:
+        dirmatch: false
