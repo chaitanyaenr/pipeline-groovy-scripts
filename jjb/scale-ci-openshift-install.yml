@@ -1,0 +1,188 @@
+- job:
+    auth-token: scale-ci-openshift
+    block-downstream: false
+    block-upstream: false
+    builders:
+    - shell: |-
+        # Clone the repository that has the performance department's credentials.
+        git clone redhat-performance/perf-dept.git
+        export PUBLIC_KEY=${WORKSPACE}/perf-dept/ssh_keys/id_rsa_perf.pub
+        export PRIVATE_KEY=${WORKSPACE}/perf-dept/ssh_keys/id_rsa_perf
+        # Ansible will complain if the private key does not have the correct permssions.
+        chmod 600 ${PRIVATE_KEY}
+
+        # Create inventory: PUBLIC_KEY, PRIVATE_KEY, OPENSTACK_SERVER, OPENSTACK_USER, IMAGE_SERVER and IMAGE_USER required.
+        files/create_inventory.sh
+
+        export ANSIBLE_FORCE_COLOR=true
+        ansible --version
+        ansible-playbook -vv playbook.yml
+    - raw:
+        xml: |
+          <org.jenkinsci.plugins.exportparams.ExportParametersBuilder plugin="export-params@1.9">
+          <filePath>parameters</filePath>
+          <fileFormat>properties</fileFormat>
+          <keyPattern />
+          <useRegexp>false</useRegexp>
+          </org.jenkinsci.plugins.exportparams.ExportParametersBuilder>
+    concurrent: false
+    description: |-
+      This Jenkins job is part of the scale-ci process that automatically install OpenShift on OpenStack.
+
+      This particular job automates the install of OpenShift on an existing OpenStack environment.
+
+      This job needs an undercloud with an overcloudrc file in the user defined in the job.
+    disabled: false
+    name: !!python/unicode 'scale-ci-openshift-install'
+    parameters:
+    - string:
+        default: b03-h01-1029p.rdu.openstack.engineering.redhat.com
+        description: The host name or IP address of the server that contains the overcloudrc
+          file for OpenStack.
+        name: OPENSTACK_SERVER
+    - string:
+        default: stack
+        description: The Playbook to run in this build.
+        name: OPENSTACK_USER
+    - string:
+        default: dell-r510-01.perf.lab.eng.rdu.redhat.com
+        description: The host name or IP address of the server that contains the OCP
+          Virtual Machine images.
+        name: IMAGE_SERVER
+    - string:
+        default: root
+        description: The user to log into the image server with.
+        name: IMAGE_USER
+    - string:
+        default: master
+        description: The branch to use when cloning the repository from github.
+        name: branch
+    - string:
+        default: m4.4xlarge-pci
+        description: The flavor to use for OpenShift Container Native Storage (CNS)
+          VMs.
+        name: openshift_cns_flavor
+    - string:
+        default: m4.10xlarge-pci
+        description: The flavor to use for OpenShift infrastructure VMs.
+        name: openshift_infra_flavor
+    - string:
+        default: r4.4xlarge-pci
+        description: The flavor to use for OpenShift master VMs.
+        name: openshift_master_flavor
+    - string:
+        default: m4.large
+        description: The name of the OpenStack flavor to use when creating the OpenShift
+          node VMs. Empty string will result in what ever is default in the openshift.yml
+          variable file.
+        name: openshift_node_flavor
+    - string:
+        default: registry.reg-aws.openshift.com:443 brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888
+        description: A space separated list of image registries (the first one should
+          be secure, the second one insecure), to add to the container image registry
+          configuration.
+        name: openshift_registries
+    - string:
+        default: 10.12.64.161 10.11.160.238 clock.corp.redhat.com
+        description: A space separated list of time servers to use for the VMs after
+          they are created. The Raleigh lab time servers are much different than the
+          Boston time servers.
+        name: time_servers
+    - string:
+        default: ''
+        description: The atomic image to use for the OpenShift cluster. Leaving this
+          blank will run the code to find the latest image.
+        name: atomic_image
+    - string:
+        default: ''
+        description: The RHEL image to use for the OpenShift cluster. Leaving this
+          blank will run the code to find the latest image.
+        name: rhel_image
+    - raw:
+        xml: |
+          <org.jvnet.jenkins.plugins.nodelabelparameter.LabelParameterDefinition plugin="nodelabelparameter@1.7.2">
+          <name>JENKINS_SLAVE_LABEL</name>
+          <description>ansible-2.3 | ansible-2.4 | ansible-latest</description>
+          <defaultValue>ansible-2.4</defaultValue>
+          <allNodesMatchingLabel>false</allNodesMatchingLabel>
+          <triggerIfResult>allCases</triggerIfResult>
+          <nodeEligibility class="org.jvnet.jenkins.plugins.nodelabelparameter.node.AllNodeEligibility" />
+          </org.jvnet.jenkins.plugins.nodelabelparameter.LabelParameterDefinition>
+    - bool:
+        default: true
+        description: Create flavors in the openstack environment.
+        name: create_flavors
+    - bool:
+        default: true
+        description: Prepare images and upload them to glance in the openstack environment.
+        name: upload_images
+    project-type: freestyle
+    properties:
+    - build-discarder:
+        artifact-days-to-keep: -1
+        artifact-num-to-keep: -1
+        days-to-keep: -1
+        num-to-keep: 15
+    - raw:
+        xml: |
+          <hudson.plugins.disk__usage.DiskUsageProperty plugin="disk-usage@0.28" />
+    - raw:
+        xml: |
+          <com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty plugin="gitlab-plugin@1.5.2">
+          <gitLabConnection />
+          </com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty>
+    - raw:
+        xml: |
+          <org.jenkinsci.plugins.ZMQEventPublisher.HudsonNotificationProperty plugin="zmq-event-publisher@0.0.5">
+          <enabled>false</enabled>
+          </org.jenkinsci.plugins.ZMQEventPublisher.HudsonNotificationProperty>
+    - raw:
+        xml: |
+          <com.synopsys.arc.jenkins.plugins.ownership.jobs.JobOwnerJobProperty plugin="ownership@0.10.0">
+          <ownership>
+          <ownershipEnabled>true</ownershipEnabled>
+          <primaryOwnerId>mbruzek</primaryOwnerId>
+          <coownersIds class="sorted-set">
+          <string>jmencak</string>
+          </coownersIds>
+          </ownership>
+          </com.synopsys.arc.jenkins.plugins.ownership.jobs.JobOwnerJobProperty>
+    - raw:
+        xml: |
+          <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.25">
+          <autoRebuild>false</autoRebuild>
+          <rebuildDisabled>false</rebuildDisabled>
+          </com.sonyericsson.rebuild.RebuildSettings>
+    - raw:
+        xml: |
+          <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.0.1">
+          <maxConcurrentPerNode>0</maxConcurrentPerNode>
+          <maxConcurrentTotal>0</maxConcurrentTotal>
+          <categories class="java.util.concurrent.CopyOnWriteArrayList" />
+          <throttleEnabled>false</throttleEnabled>
+          <throttleOption>project</throttleOption>
+          <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+          <paramsToUseForLimit />
+          </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    publishers:
+    - raw:
+        xml: |
+          <hudson.tasks.ArtifactArchiver>
+          <artifacts>artifacts/**/*, inventory, parameters.properties</artifacts>
+          <allowEmptyArchive>true</allowEmptyArchive>
+          <onlyIfSuccessful>false</onlyIfSuccessful>
+          <fingerprint>false</fingerprint>
+          <defaultExcludes>true</defaultExcludes>
+          <caseSensitive>true</caseSensitive>
+          </hudson.tasks.ArtifactArchiver>
+    scm:
+    - git:
+        branches:
+        - refs/heads/${branch}
+        url: https://github.com/redhat-performance/scale-ci-ansible.git
+    triggers: []
+    wrappers:
+    - workspace-cleanup:
+        dirmatch: false
+    - ansicolor:
+        colormap: xterm
