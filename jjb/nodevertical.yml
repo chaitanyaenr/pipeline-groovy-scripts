@@ -44,7 +44,7 @@
         exit 0
 
     concurrent: false
-    description: "This job runs nodevertical on openshift. This job depends on https://openshift-qe-jenkins.rhev-ci-vms.eng.rdu2.redhat.com/view/System%20Verification%20Test/job/SETUP-TOOLING/\
+    description: "This job runs nodevertical on openshift. This job depends on https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/view/System%20Verification%20Test/job/SETUP-TOOLING/\
       \ to setup pbench both containerized and non containerized.\t\t"
     disabled: false
     name: !!python/unicode 'setup-tooling.yml'
@@ -68,7 +68,7 @@
         description: The name to use in the ssh ProxyCommand.
         name: PROXY_USER
     - string:
-        default: b08-h02-r620.rdu.openstack.engineering.redhat.com
+        default: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
         description: The server to use in the ssh ProxyCommand.
         name: PROXY_HOST
     - bool:
@@ -145,7 +145,7 @@
         branches:
         - '*/master'
         credentials-id: XXXXXXXXXX
-        url: ssh://openshift-jenkins@code.engineering.redhat.com:22/cucushift-internal
+        url: xxxxxxxxxxxxxxxxxxxxxx
     triggers: []
     wrappers:
     - ansicolor:

@@ -28,7 +28,7 @@
     name: !!python/unicode 'scaleup'
     parameters:
     - string:
-        default: b03-h01-1029p.rdu.openstack.engineering.redhat.com
+        default: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
         description: The host name or IP address of the server that contains the overcloudrc
           file for OpenStack.
         name: OPENSTACK_SERVER
@@ -37,7 +37,7 @@
         description: The user to log into the OpenStack server with.
         name: OPENSTACK_USER
     - string:
-        default: dell-r510-01.perf.lab.eng.rdu.redhat.com
+        default: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
         description: The host name or IP address of the server that contains the OCP
           Virtual Machine images.
         name: IMAGE_SERVER
@@ -60,7 +60,7 @@
         description: The total scale is done in smaller chunks of blocks.
         name: scale_block_size
     - string:
-        default: 10.12.64.161 10.11.160.238 clock.redhat.com
+        default: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
         description: A space separated list of time servers to use for the VMs after
           they are created. The Raleigh lab time servers are much different than the
           Boston time servers.

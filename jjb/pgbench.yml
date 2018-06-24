@@ -305,7 +305,7 @@
         branches:
         - '*/master'
         credentials-id: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-        url: ssh://openshift-jenkins@code.engineering.redhat.com:22/cucushift-internal
+        url: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     triggers: []
     wrappers:
     - workspace-cleanup:

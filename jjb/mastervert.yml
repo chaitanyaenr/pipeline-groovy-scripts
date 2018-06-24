@@ -22,7 +22,7 @@
         \ )\n#if [[ \"$test_rc\" != 0 ]]; then\n#\techo \"mastervertical test failed\"\
         \n#\texit 1\n#fi\nexit 0\n\n"
     concurrent: false
-    description: This job runs mastervertical on openshift. This job depends on https://openshift-qe-jenkins.rhev-ci-vms.eng.rdu2.redhat.com/view/System%20Verification%20Test/job/SETUP-TOOLING/
+    description: This job runs mastervertical on openshift. This job depends on https://xxxxxxxxxxxxxx/view/System%20Verification%20Test/job/SETUP-TOOLING/
       to setup pbench both containerized and non containerized.
     disabled: false
     name: !!python/unicode 'mastervertical'
@@ -135,7 +135,7 @@
         branches:
         - '*/master'
         credentials-id: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-        url: ssh://openshift-jenkins@code.engineering.redhat.com:22/cucushift-internal
+        url: XXXXXXXXXXXXXXXXXXXXXXX
     triggers: []
     wrappers:
     - ansicolor:

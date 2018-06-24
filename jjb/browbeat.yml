@@ -26,7 +26,7 @@
     name: !!python/unicode 'browbeat'
     parameters:
     - string:
-        default: b03-h01-1029p.rdu.openstack.engineering.redhat.com
+        default: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
         description: The OpenStack server also known as the undercloud.
         name: OPENSTACK_SERVER
     - string:
@@ -34,7 +34,7 @@
         description: The user for the OpenStack server.
         name: OPENSTACK_USER
     - string:
-        default: norton.perf.lab.eng.rdu.redhat.com
+        default: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
         description: Graphite server for timeseries metrics
         name: GRAPHITE
     - string:

@@ -1,0 +1,241 @@
+- job:
+    auth-token: install_OpenStack
+    block-downstream: false
+    block-upstream: false
+    builders:
+    - shell: |-
+        # List the environment variables.
+        env
+        set -o pipefail
+        set -eux
+
+        git clone https://${PERSONAL_ACCESS_TOKEN}@github.com/redhat-performance/perf-dept.git
+        export PUBLIC_KEY=${WORKSPACE}/perf-dept/ssh_keys/id_rsa_perf.pub
+        export PRIVATE_KEY=${WORKSPACE}/perf-dept/ssh_keys/id_rsa_perf
+        # Ansible will complain if the private key does not have the correct permssions.
+        chmod 600 ${PRIVATE_KEY}
+
+        echo "[undercloud]" > hosts
+        echo "$UNDERCLOUD_HOSTNAME ansible_ssh_pass=${ANSIBLE_SSH_PASS}" >> hosts
+
+        export ANSIBLE_FORCE_COLOR=true
+        ansible --version
+        ansible-playbook -vv -i hosts deploy-scalelab.yaml -e ${EXTRA_VARS} --private-key ${PRIVATE_KEY}  | tee -a artifacts/deploy-scalelab.timing
+    - raw:
+        xml: |
+          <org.jenkinsci.plugins.exportparams.ExportParametersBuilder plugin="export-params@1.9">
+          <filePath>parameters.properties</filePath>
+          <fileFormat>properties</fileFormat>
+          <keyPattern />
+          <useRegexp>false</useRegexp>
+          </org.jenkinsci.plugins.exportparams.ExportParametersBuilder>
+    concurrent: false
+    description: null
+    disabled: false
+    name: !!python/unicode 'openstack'
+    parameters:
+    - bool:
+        default: true
+        description: ''
+        name: OSP_REBUILD_UNDERCLOUD
+    - string:
+        default: https://url.corp.redhat.com/rhos-release
+        description: Used to install and update the latest development repositories
+          for OpenStack
+        name: RHOS_RELEASE_URL
+    - string:
+        default: xxxxxxxxxxxxxxxxxxxxxx
+        description: The sha512 encrypted password.
+        name: STACK_PASSWORD
+    - choice:
+        choices:
+        - '1'
+        - '0'
+        description: |-
+          0 - private external network (Unlimited private floating ips)
+          1 - public external network (Limited public floating ips)
+        name: OSP_EXTERNAL_NETWORK_SETUP
+    - string:
+        default: xxxxxxxxxxx
+        description: The Domain Name Server (DNS) for the RDU scale lab.
+        name: OSP_DNS_SERVER
+    - string:
+        default: '601'
+        description: |-
+          10 - private external <br />
+          601 - public external
+        name: OSP_EXTERNAL_VLAN
+    - string:
+        default: xxxxxxx
+        description: The Classless Inter-Domain Routing (CIDR) range for the OpenStack
+          external network used by controllers.
+        name: OSP_EXTERNAL_NET_CIDR
+    - string:
+        default: xxxxx
+        description: The external network gateway.
+        name: OSP_EXTERNAL_NET_GATEWAY
+    - string:
+        default: xxxxxx
+        description: The private external interface default route.
+        name: OSP_PRIVATE_EXTERNAL_ADDRESS
+    - string:
+        default: xxxxxx
+        description: The IP of the external service for the OS_AUTH_URL.
+        name: OSP_EXTERNAL_NETWORK_VIP
+    - string:
+        default: xxxxxxxx
+        description: The external network allocation pool start address. Used to give
+          controllers an external network address.
+        name: OSP_EXTERNAL_NET_POOL_START
+    - string:
+        default: xxxxxxxxxx
+        description: The external network allocation pool end address. Used to give
+          controllers an external network address.
+        name: OSP_EXTERNAL_NET_POOL_END
+    - string:
+        default: xxxxxxxx
+        description: |-
+          The OpenStack floating ip pool start. <br />
+          This value must be in the OSP_EXTERNAL_NET_CIDR range, but not overlap with OSP_EXTERNAL_NET_POOL variables.
+        name: OSP_FIP_POOL_START
+    - string:
+        default: xxxxxxxx
+        description: |-
+          The OpenStack floating ip pool end. <br />
+          This value must be in the OSP_EXTERNAL_NET_CIDR range, but not overlap with OSP_EXTERNAL_NET_POOL variables.
+        name: OSP_FIP_POOL_END
+    - string:
+        default: http://quads.scalelab.redhat.com/cloud/cloud03_instackenv.json
+        description: Quads provided Instackenv.json
+        name: INSTACKENV_JSON
+    - string:
+        default: cloud03
+        description: The cloud name in the RDU scale lab.
+        name: CLOUD_TITLE
+    - string:
+        default: xxxxxxxx
+        description: 'The Scale lab ticket number, used as authentication to prevent
+          accidential overwriting of clouds. '
+        name: TICKET_NUMBER
+    - string:
+        default: https://foreman.scalelab.redhat.com
+        description: 'The Foreman server address, used to trigger a rebuild on the
+          undercloud and produce a clean environment to work with. '
+        name: FOREMAN_URL
+    - string:
+        default: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        description: The hostname of the server to become the undercloud and install
+          OpenStack.
+        name: UNDERCLOUD_HOSTNAME
+    - raw:
+        xml: |
+          <hudson.model.PasswordParameterDefinition>
+          <name>ANSIBLE_SSH_PASS</name>
+          <description>The password for ansible to use to log into the systems.</description>
+          <defaultValue>xxxxxxxxxxxxxxxxxxxxxx</defaultValue>
+          </hudson.model.PasswordParameterDefinition>
+    - string:
+        default: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        description: The hostname or address of the NTP server for the RDU lab.
+        name: NTP_SERVER
+    - string:
+        default: openstack-alderaan
+        description: Cloud name used for Metadata (logs graphite etc)
+        name: CLOUD_NAME
+    - string:
+        default: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        description: Graphite server for timeseries metrics
+        name: GRAPHITE
+    - string:
+        default: '34'
+        description: The number of systems to use for OpenStack compute.
+        name: NUM_COMPUTE
+    - string:
+        default: '5'
+        description: The number of systems to use for storage.
+        name: NUM_STORAGE
+    - string:
+        default: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        description: The github access token to clone the perf-dept repo to get the
+          ssh keys.
+        name: PERSONAL_ACCESS_TOKEN
+    - string:
+        default: '@profiles/openshift-deploy.yml'
+        description: The extra variables pass the deploy-scalelab.yml playbook. Use
+          the @ symbol to specify a file.
+        name: EXTRA_VARS
+    - raw:
+        xml: |
+          <org.jvnet.jenkins.plugins.nodelabelparameter.LabelParameterDefinition plugin="nodelabelparameter@1.7.2">
+          <name>JENKINS_SLAVE_LABEL</name>
+          <description>The slave must have this version of ansible.</description>
+          <defaultValue>ansible-2.4</defaultValue>
+          <allNodesMatchingLabel>false</allNodesMatchingLabel>
+          <triggerIfResult>allCases</triggerIfResult>
+          <nodeEligibility class="org.jvnet.jenkins.plugins.nodelabelparameter.node.AllNodeEligibility" />
+          </org.jvnet.jenkins.plugins.nodelabelparameter.LabelParameterDefinition>
+    project-type: freestyle
+    properties:
+    - raw:
+        xml: |
+          <hudson.plugins.disk__usage.DiskUsageProperty plugin="disk-usage@0.28" />
+    - raw:
+        xml: |
+          <com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty plugin="gitlab-plugin@1.5.2">
+          <gitLabConnection />
+          </com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty>
+    - raw:
+        xml: |
+          <org.jenkinsci.plugins.ZMQEventPublisher.HudsonNotificationProperty plugin="zmq-event-publisher@0.0.5">
+          <enabled>false</enabled>
+          </org.jenkinsci.plugins.ZMQEventPublisher.HudsonNotificationProperty>
+    - raw:
+        xml: |
+          <com.synopsys.arc.jenkins.plugins.ownership.jobs.JobOwnerJobProperty plugin="ownership@0.10.0">
+          <ownership>
+          <ownershipEnabled>true</ownershipEnabled>
+          <primaryOwnerId>jkilpatr</primaryOwnerId>
+          <coownersIds class="sorted-set">
+          <string>mbruzek</string>
+          </coownersIds>
+          </ownership>
+          </com.synopsys.arc.jenkins.plugins.ownership.jobs.JobOwnerJobProperty>
+    - raw:
+        xml: |
+          <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.25">
+          <autoRebuild>false</autoRebuild>
+          <rebuildDisabled>false</rebuildDisabled>
+          </com.sonyericsson.rebuild.RebuildSettings>
+    - raw:
+        xml: |
+          <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.0.1">
+          <maxConcurrentPerNode>0</maxConcurrentPerNode>
+          <maxConcurrentTotal>0</maxConcurrentTotal>
+          <categories class="java.util.concurrent.CopyOnWriteArrayList" />
+          <throttleEnabled>false</throttleEnabled>
+          <throttleOption>project</throttleOption>
+          <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+          <paramsToUseForLimit />
+          </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    publishers:
+    - raw:
+        xml: |
+          <hudson.tasks.ArtifactArchiver>
+          <artifacts>artifacts/**/*, hosts, parameters.properties</artifacts>
+          <allowEmptyArchive>true</allowEmptyArchive>
+          <onlyIfSuccessful>false</onlyIfSuccessful>
+          <fingerprint>false</fingerprint>
+          <defaultExcludes>true</defaultExcludes>
+          <caseSensitive>true</caseSensitive>
+          </hudson.tasks.ArtifactArchiver>
+    scm:
+    - git:
+        branches:
+        - '*/master'
+        url: https://github.com/redhat-performance/tripleo-quickstart-scalelab.git
+    triggers: []
+    wrappers:
+    - workspace-cleanup:
+        dirmatch: false
+    - ansicolor:
+        colormap: xterm

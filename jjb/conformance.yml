@@ -128,7 +128,7 @@
         branches:
         - '*/master'
         credentials-id: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-        url: ssh://openshift-jenkins@code.engineering.redhat.com:22/cucushift-internal
+        url: xxxxxxxxxxxxxxxxxxxxxxxxx
     triggers: []
     wrappers:
     - ansicolor:
