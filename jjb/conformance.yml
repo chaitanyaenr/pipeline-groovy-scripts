@@ -72,7 +72,7 @@
         description: The name to use in the ssh ProxyCommand.
         name: PROXY_USER
     - string:
-        default: b03-h01-1029p.rdu.openstack.engineering.redhat.com
+        default: xxxxxxxxxxxxxxxxxxxxxxx
         description: The server to use in the ssh ProxyCommand.
         name: PROXY_HOST
     project-type: freestyle
